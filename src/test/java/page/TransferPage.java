@@ -15,14 +15,12 @@ public class TransferPage {
     private static final SelenideElement buttonTransferAction = $("[data-test-id='action-transfer']");
     private static final SelenideElement errorMessage = $("[data-test-id='error-notification']");
 
-    public DashboardPage transferFrom(PlasticCard card, int amount) throws Exception {
+    public DashboardPage transferFrom(PlasticCard card, int amount){
         fromInput.setValue(card.getCardNo());
         amountInput.setValue(String.valueOf(amount));
         buttonTransferAction.click();
 
-        if (errorMessage.is(Condition.visible)){
-            throw new Exception("Error message is appeared");
-        }
+        errorMessage.shouldBe(Condition.hidden);
 
         return new DashboardPage();
     }

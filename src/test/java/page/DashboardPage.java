@@ -2,57 +2,48 @@ package page;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
-import page.elements.PlasticCardElement;
+import utils.DataHelper;
 import utils.PlasticCard;
-
-import java.util.Arrays;
 
 import static com.codeborne.selenide.Selenide.*;
 
 public class DashboardPage {
+    private final String balanceStart = "баланс: ";
+    private final String balanceFinish = " р.";
+    private final int firstSymbolOfFourCardChars = 15;
     private final ElementsCollection cards = $$(".list__item div");
-    private final PlasticCardElement[] cardElements;
 
     public DashboardPage(){
         $("[data-test-id='dashboard']").shouldBe(Condition.exist);
-        cardElements = getCardsElements();
     }
 
-    private PlasticCardElement[] getCardsElements(){
-        PlasticCardElement[] result = new PlasticCardElement[cards.size()];
+    public PlasticCard[] getCards(){
+        PlasticCard[] result = new PlasticCard[cards.size()];
+
         for(int i = 0; i < cards.size(); i++){
-            result[i] = new PlasticCardElement(cards.get(i));
+            var cardItemCaption = cards.get(i).getText();
+            var amountOfCard = extractBalance(cardItemCaption);
+            var cardNo = extractCardNo(cardItemCaption);
+            var elementId = cards.get(i).getAttribute("data-test-id");
+
+            result[i] = new PlasticCard(elementId, cardNo, amountOfCard);
         }
         return result;
     }
 
-    public int getBalance(PlasticCard card) throws Exception {
-        var cardElement = getCardOrNull(card);
-
-        if (cardElement == null){
-            throw new Exception("Card not found " + card.getCardNo());
-        }
-
-        return cardElement.getBalance();
+    private String extractCardNo(String text){
+        return DataHelper.getFirstPartOfCard() + text.substring(firstSymbolOfFourCardChars, firstSymbolOfFourCardChars + 4);
     }
 
-    public TransferPage selectCard(PlasticCard card) throws Exception {
-        var cardElement = getCardOrNull(card);
+    private int extractBalance(String text) {
+        var start = text.indexOf(balanceStart);
+        var finish = text.indexOf(balanceFinish);
+        var value = text.substring(start + balanceStart.length(), finish);
+        return Integer.parseInt(value);
+    }
 
-        if (cardElement == null){
-            throw new Exception("Card not found " + card.getCardNo());
-        }
-
-        cardElement.clickTransferButton();
+    public TransferPage selectCard(PlasticCard card) {
+        $("[data-test-id='" + card.getTestId() + "'] button").click();
         return new TransferPage();
-    }
-
-    private PlasticCardElement getCardOrNull(PlasticCard card){
-        for (PlasticCardElement element : cardElements){
-            if (card.getCardNo().equals(element.getCardNo())){
-                return element;
-            }
-        }
-        return null;
     }
 }

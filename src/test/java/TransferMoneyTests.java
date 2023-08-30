@@ -3,16 +3,14 @@ import org.junit.jupiter.api.Test;
 import page.DashboardPage;
 import page.LoginPage;
 import utils.DataHelper;
-import utils.PlasticCard;
 
 import static com.codeborne.selenide.Selenide.open;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TransferMoneyTests {
     private DashboardPage sut;
-    private final PlasticCard firstCard = DataHelper.getFirstCard();
-    private final PlasticCard secondCard = DataHelper.getSecondCard();
-
+    final int indexOfFirstCard = 0;
+    final int indexOfSecondCard = 1;
 
     @BeforeEach
     void setup() {
@@ -23,19 +21,21 @@ public class TransferMoneyTests {
     }
 
     @Test
-    public void testValidTransfer_Success() throws Exception {
-        var balanceOfFirstCard = sut.getBalance(firstCard);
-        var balanceOfSecondCard = sut.getBalance(secondCard);
+    public void testValidTransfer_Success(){
+        var cards = sut.getCards();
+        var firstCard = cards[indexOfFirstCard];
+        var secondCard = cards[indexOfSecondCard];
 
-        var amountForTransfer = DataHelper.generateValidAmount(balanceOfFirstCard);
-        var expectedAmountForFirstCard = balanceOfFirstCard + amountForTransfer;
-        var expectedAmountForSecondCard = balanceOfSecondCard - amountForTransfer;
+        var amountForTransfer = DataHelper.generateValidAmount(firstCard.getAmount());
+        var expectedAmountForFirstCard = firstCard.getAmount() + amountForTransfer;
+        var expectedAmountForSecondCard = secondCard.getAmount() - amountForTransfer;
 
         var transferPage = sut.selectCard(firstCard);
         var dashBoard = transferPage.transferFrom(secondCard, amountForTransfer);
 
-        var actualAmountForFirstCard = dashBoard.getBalance(firstCard);
-        var actualAmountForSecondCard = dashBoard.getBalance(secondCard);
+        var updatedCards = dashBoard.getCards();
+        var actualAmountForFirstCard = updatedCards[indexOfFirstCard].getAmount();
+        var actualAmountForSecondCard = updatedCards[indexOfSecondCard].getAmount();
 
         assertEquals(expectedAmountForFirstCard, actualAmountForFirstCard);
         assertEquals(expectedAmountForSecondCard, actualAmountForSecondCard);

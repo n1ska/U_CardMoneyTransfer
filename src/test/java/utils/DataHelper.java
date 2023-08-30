@@ -14,14 +14,6 @@ public class DataHelper {
         return firstPartOfAllCards;
     }
 
-    public static PlasticCard getFirstCard(){
-        return new PlasticCard(getFirstPartOfCard() + "0001");
-    }
-
-    public static PlasticCard getSecondCard(){
-        return new PlasticCard(getFirstPartOfCard() + "0002");
-    }
-
     public static int generateValidAmount(int amount){
         return new Random().nextInt(Math.abs(amount)) + 1;
     }
